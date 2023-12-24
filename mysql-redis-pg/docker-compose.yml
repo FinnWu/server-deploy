@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: starflow
+      TZ: Asia/Shanghai
+    ports:
+      - 3308:3306
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    command: redis-server --requirepass starflow
+    restart: always
+    volumes:
+      - /service/redis:/data
+    ports:
+      - 6379:6379
+
+  pg:
+    image: ankane/pgvector:v0.5.0 # git
+    # image: registry.cn-hangzhou.aliyuncs.com/fastgpt/pgvector:v0.4.2 # 阿里云
+    restart: always
+    ports: # 生产环境建议不要暴露
+      - 5432:5432
+    environment:
+      # 这里的配置只有首次运行生效。修改后，重启镜像是不会生效的。需要把持久化数据删除再重启，才有效果
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=starflow
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./pg/data:/var/lib/postgresql/data
